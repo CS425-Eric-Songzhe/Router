@@ -13,13 +13,13 @@
 
 #include <stdio.h>
 #include <assert.h>
-
+#include <string.h>
 
 #include "sr_if.h"
 #include "sr_rt.h"
 #include "sr_router.h"
 #include "sr_protocol.h"
-
+#include "my_ARP.h"
 /*--------------------------------------------------------------------- 
  * Method: sr_init(void)
  * Scope:  Global
@@ -32,8 +32,9 @@ void sr_init(struct sr_instance* sr)
 {
     /* REQUIRES */
     assert(sr);
-
+    
     /* Add initialization code here! */
+    // TODO for caching in milestone 2
 
 } /* -- sr_init -- */
 
@@ -67,6 +68,13 @@ void sr_handlepacket(struct sr_instance* sr,
 
     printf("*** -> Received packet of length %d \n",len);
 
+    struct sr_ethernet_hdr * ethernetHdr = (struct sr_ethernet_hdr *)packet;
+             
+    if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
+      //printf("Eth Type: %4.4x -> ARP\n", ntohs(ethernetHdr->ether_type));
+      handle_ARP(sr, packet, len, interface);
+    }     
+    
 }/* end sr_ForwardPacket */
 
 
