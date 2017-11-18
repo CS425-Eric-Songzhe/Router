@@ -9,10 +9,10 @@
 #include "sr_rt.h"
 #include "sr_router.h"
 #include "sr_protocol.h"
-#include "ethernet.h"
-#include "arp.h"
-#include "icmp.h"
-#include "ip.h"
+#include "my_ethhdr.h"
+#include "my_ARP.h"
+//#include "icmp.h"
+#include "my_IP.h"
 
 /* length of zero signifies empty spot in cache */
 struct packet_cache_entry packetCache[PACKET_CACHE_SIZE];
@@ -75,7 +75,7 @@ void forwardPacket(struct sr_instance *sr,
     struct in_addr forwarded;
     int i;
 
-    makeethernet(ethernetHdr, ntohs(ethernetHdr->ether_type),
+    make_ethhdr(ethernetHdr, ntohs(ethernetHdr->ether_type),
 		 sr_get_interface(sr, interface)->addr, desthwaddr);
 
     sr_send_packet(sr, packet, len, interface);
@@ -102,7 +102,7 @@ void cachePacket(struct sr_instance *sr,
     int i;
 
     /* request arp for the unidentified packet */
-    arpSendRequest(sr, sr_get_interface(sr, rtptr->interface),
+    send_ARP_request(sr, sr_get_interface(sr, rtptr->interface),
 		   rtptr->gw.s_addr);
 
     /* look through packet cache for the first empty entry */
@@ -162,7 +162,7 @@ void checkCachedPackets(struct sr_instance *sr, int cachedArp)
 		    if ((int)
 			(difftime(time(NULL), packetCache[i].timeCached)) %
 			3 < 1) {
-			arpSendRequest(sr,
+			send_ARP_request(sr,
 				       sr_get_interface(sr,
 							packetCache[i].
 							nexthop->

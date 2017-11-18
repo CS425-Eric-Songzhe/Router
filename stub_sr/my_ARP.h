@@ -41,7 +41,7 @@ void arpUpdateCache();
 uint8_t* arpReturnEntryMac(int adr); 
 void arpDumpCache(); 
 void arpDumpHeader(struct sr_arphdr* arp_hdr);
-
+int arpSearchCache(uint32_t );
 
 
 

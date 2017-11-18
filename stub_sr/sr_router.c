@@ -21,6 +21,7 @@
 #include "sr_protocol.h"
 #include "my_forward.h"
 #include "my_ARP.h"
+#include "my_IP.h"
 /*--------------------------------------------------------------------- 
  * Method: sr_init(void)
  * Scope:  Global
