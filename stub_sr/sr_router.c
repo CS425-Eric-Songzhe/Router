@@ -105,10 +105,40 @@ void sr_handlepacket(struct sr_instance *sr, uint8_t * packet /* lent */ ,
 
 
 
-}				/* end sr_ForwardPacket */
+}/* end sr_ForwardPacket */
 
 
-/*--------------------------------------------------------------------- 
- * Method:
- *
- *---------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------  
+ * * Method: int weAreTarget(struct sr_instance* sr, struct sr_ethernet_hdr * ethernetHdr)
+ * *  
+ * * determines if are the destination interface for our packet  
+ * *---------------------------------------------------------------------------*/ 
+int weAreTarget(struct sr_instance* sr, uint8_t* packet, const char* interface) {
+	struct sr_ethernet_hdr* ethernetHdr = (struct sr_ethernet_hdr*)packet;
+	struct sr_if* incoming_if = sr_get_interface(sr, interface);
+	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
+		struct sr_arphdr* arpHdr = (struct sr_arphdr*)(packet+14);
+		if (incoming_if->ip == arpHdr->ar_tip)
+			return 1;
+	} else if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_IP) {
+		struct ip* ipHdr = (struct ip*)(packet+14);
+		if (incoming_if->ip == ipHdr->ip_dst.s_addr)
+			return 1;     
+	}
+	return 0; 
+}  
+
+
+/*-----------------------------------------------------------------------------  
+ * * Method: int dstIsBroadcast(struct sr_ethernet_hdr* ethernetHdr)  
+ * *  
+ * * determines if the incoming packet is broadcast  
+ * *---------------------------------------------------------------------------*/ 
+int dstIsBroadcast(struct sr_ethernet_hdr* ethernetHdr) {
+	int i;
+	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+		if (ethernetHdr->ether_dhost[i] != 0xff)
+			return 0;     
+	}      
+	return 1; 
+}
