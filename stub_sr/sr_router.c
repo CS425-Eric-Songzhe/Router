@@ -19,6 +19,7 @@
 #include "sr_rt.h"
 #include "sr_router.h"
 #include "sr_protocol.h"
+#include "my_forward.h"
 #include "my_ARP.h"
 /*--------------------------------------------------------------------- 
  * Method: sr_init(void)
@@ -28,16 +29,16 @@
  * 
  *---------------------------------------------------------------------*/
 
-void sr_init(struct sr_instance* sr) 
+void sr_init(struct sr_instance *sr)
 {
     /* REQUIRES */
     assert(sr);
-    
+
     /* Add initialization code here! */
     // TODO for caching in milestone 2
-    arpInitCache();     
+    arpInitCache();
     initPacketCache();
-} /* -- sr_init -- */
+}				/* -- sr_init -- */
 
 
 
@@ -57,26 +58,54 @@ void sr_init(struct sr_instance* sr)
  *
  *---------------------------------------------------------------------*/
 
-void sr_handlepacket(struct sr_instance* sr, 
-        uint8_t * packet/* lent */,
-        unsigned int len,
-        char* interface/* lent */)
+void sr_handlepacket(struct sr_instance *sr, uint8_t * packet /* lent */ ,
+		     unsigned int len, char *interface /* lent */ )
 {
     /* REQUIRES */
     assert(sr);
     assert(packet);
     assert(interface);
 
-    printf("*** -> Received packet of length %d \n",len);
+    printf("*** -> Received packet of length %d \n", len);
 
-    struct sr_ethernet_hdr * ethernetHdr = (struct sr_ethernet_hdr *)packet;
-             
-    if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
-      //printf("Eth Type: %4.4x -> ARP\n", ntohs(ethernetHdr->ether_type));
-      handle_ARP(sr, packet, len, interface);
-    }     
-    
-}/* end sr_ForwardPacket */
+    struct sr_ethernet_hdr *ethernetHdr =
+	(struct sr_ethernet_hdr *) packet;
+
+    arpUpdateCache();
+
+    if (dstIsBroadcast(ethernetHdr)) {
+	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP\n",
+		    ntohs(ethernetHdr->ether_type));
+	    handle_ARP(sr, packet, len, interface);
+	}
+    } else if (weAreTarget(sr, packet, interface)) {
+	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_IP) {
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP\n",
+		    ntohs(ethernetHdr->ether_type));
+	    handleIp(sr, packet, len, interface);
+	}
+
+	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP\n",
+		    ntohs(ethernetHdr->ether_type));
+	    handle_ARP(sr, packet, len, interface);
+	}
+    } else {
+	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_IP) {
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP\n",
+		    ntohs(ethernetHdr->ether_type));
+	    handleForward(sr, packet, len, interface);
+	}
+    }
+
+
+
+
+
+
+
+}				/* end sr_ForwardPacket */
 
 
 /*--------------------------------------------------------------------- 

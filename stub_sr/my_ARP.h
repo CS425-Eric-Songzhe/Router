@@ -12,6 +12,13 @@
 #define CACHE_SIZE 100
 #define CACHE_EXPTIME 15
 
+struct arp_cache_entry {
+  uint32_t            ar_sip;                     // sender ip addr
+  uint8_t             ar_sha[ETHER_ADDR_LEN];     // sender hardware addr
+  time_t              timeCached;                 // timestamp
+  int                 valid;                      // timeout
+};
+
 void make_ARP_hdr(struct sr_arphdr* arp_hdr,         
 	     uint16_t    hrd_type,
              uint16_t    pro_type,
