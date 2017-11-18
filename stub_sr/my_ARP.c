@@ -179,3 +179,24 @@ int is_ARP_reply(struct sr_arphdr* arp_hdr){
 
   return ret;
 }
+
+//Milestone 2:
+
+//Set up the arp cache
+void arpInitCache() {
+	int i;
+	for (i = 0; i < ARP_CACHE_SIZE; i++) {
+		arpCache[i].valid = 0;     
+	} 
+}
+
+
+
+
+
+
+
+
+
+
+

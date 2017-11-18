@@ -35,7 +35,8 @@ void sr_init(struct sr_instance* sr)
     
     /* Add initialization code here! */
     // TODO for caching in milestone 2
-
+    arpInitCache();     
+    initPacketCache();
 } /* -- sr_init -- */
 
 

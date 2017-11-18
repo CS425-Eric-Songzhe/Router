@@ -27,7 +27,13 @@ void send_ARP_reply(struct sr_instance* sr, uint8_t* pkt, unsigned int len, char
 void send_ARP_request(struct sr_instance* sr, struct sr_if* ifnode, uint32_t tp_addr);
 int is_ARP_request(struct sr_arphdr* arp_hdr);
 int is_ARP_reply(struct sr_arphdr* arp_hdr);
-
+//milestone 2
+void arpInitCache();
+void arpCacheEntry(struct sr_arphdr* arp_hdr); 
+void arpUpdateCache(); 
+uint8_t* arpReturnEntryMac(int adr); 
+void arpDumpCache(); 
+void arpDumpHeader(struct sr_arphdr* arp_hdr);
 
 
 
