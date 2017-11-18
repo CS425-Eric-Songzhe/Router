@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "my_forward.h"
 #include "sr_if.h"
 #include "sr_rt.h"
 #include "sr_router.h"
@@ -12,7 +13,6 @@
 #include "arp.h"
 #include "icmp.h"
 #include "ip.h"
-#include "my_forward.h"
 
 /* length of zero signifies empty spot in cache */
 struct packet_cache_entry packetCache[PACKET_CACHE_SIZE];

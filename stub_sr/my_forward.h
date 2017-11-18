@@ -20,7 +20,7 @@ struct packet_cache_entry {
     time_t timeCached;
 };
 
-void handleForward(struct sr_instance *, uint8_t *, unsigned int, char *);
+void handleForward(struct sr_instance * sr, uint8_t * packet, unsigned int len, char *interface);
 void forwardPacket(struct sr_instance *, uint8_t *, unsigned int, char *,
 		   uint8_t *);
 void cachePacket(struct sr_instance *, uint8_t *, unsigned int,
