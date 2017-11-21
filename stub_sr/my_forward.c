@@ -11,7 +11,7 @@
 #include "sr_protocol.h"
 #include "my_ethhdr.h"
 #include "my_ARP.h"
-//#include "icmp.h"
+#include "my_icmp.h"
 #include "my_IP.h"
 
 /* length of zero signifies empty spot in cache */

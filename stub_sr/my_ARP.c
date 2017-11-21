@@ -168,8 +168,8 @@ int is_ARP_request(struct sr_arphdr* arp_hdr){
 
   if(ret)
     printf("IS an ARP request\n");
-  else
-    printf("NOT an ARP request\n");
+  //else
+  //  printf("NOT an ARP request\n");
 
   return ret;
 }
@@ -182,8 +182,8 @@ int is_ARP_reply(struct sr_arphdr* arp_hdr){
 
   if(ret) 
     printf("IS an ARP reply\n"); 
-  else  
-    printf("NOT an ARP reply\n");
+  //else  
+  //  printf("NOT an ARP reply\n");
 
   return ret;
 }

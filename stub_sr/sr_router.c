@@ -62,11 +62,12 @@ void sr_init(struct sr_instance *sr)
 void sr_handlepacket(struct sr_instance *sr, uint8_t * packet /* lent */ ,
 		     unsigned int len, char *interface /* lent */ )
 {
+    printf("-----------------------------------------------------------");
     /* REQUIRES */
     assert(sr);
     assert(packet);
     assert(interface);
-
+    
     printf("*** -> Received packet of length %d \n", len);
 
     struct sr_ethernet_hdr *ethernetHdr =
@@ -76,25 +77,25 @@ void sr_handlepacket(struct sr_instance *sr, uint8_t * packet /* lent */ ,
 
     if (dstIsBroadcast(ethernetHdr)) {
 	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
-	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP\n",
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP(Broadcasting)\n",
 		    ntohs(ethernetHdr->ether_type));
 	    handle_ARP(sr, packet, len, interface);
 	}
     } else if (weAreTarget(sr, packet, interface)) {
 	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_IP) {
-	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP\n",
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP(Target)\n",
 		    ntohs(ethernetHdr->ether_type));
 	    handleIp(sr, packet, len, interface);
 	}
 
 	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_ARP) {
-	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP\n",
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> ARP(Target)\n",
 		    ntohs(ethernetHdr->ether_type));
 	    handle_ARP(sr, packet, len, interface);
 	}
     } else {
 	if (ntohs(ethernetHdr->ether_type) == ETHERTYPE_IP) {
-	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP\n",
+	    fprintf(stdout, "- Ethernet Type: %4.4x -> IP(Forward)\n",
 		    ntohs(ethernetHdr->ether_type));
 	    handleForward(sr, packet, len, interface);
 	}

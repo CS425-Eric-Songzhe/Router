@@ -8,8 +8,8 @@
 #include "sr_protocol.h"
 #include "my_ethhdr.h"
 #include "my_IP.h"
-//#include "icmp.h"
-//#include "checksum.h"
+#include "my_icmp.h"
+#include "my_checksum.h"
 
 /*--------------------------------------------------------------------- 
  * Method: void handleIp(struct sr_instance*, uint8_t*,
