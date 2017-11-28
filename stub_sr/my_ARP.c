@@ -17,8 +17,9 @@
 #include "sr_protocol.h"
 #include "my_ethhdr.h"
 #include "my_ARP.h"
+#include "sr_rt.h"
 #include "sr_router.h"
-
+#include "my_forward.h"
 /*----------------------------------------------------------------------
  * ARP Cache data structure
  *
@@ -72,10 +73,10 @@ void handle_ARP(struct sr_instance* sr, uint8_t* pkt, unsigned int len, char* in
   struct sr_if * ifnode = sr->if_list; 
   struct in_addr req, rep;     
   int i;
-
+  printf("handle_ARP: interface: %s\n", interface);
   if(is_ARP_request(arp_hdr)){
          req.s_addr = arp_hdr->ar_tip;
-         printf("ARP Req: Broadcasting %s?\n", inet_ntoa(req));         
+         printf("Received ARP Req: 'Checking if I know where %s is...'\n", inet_ntoa(req));         
          while (ifnode) {
              if (ifnode->ip == arp_hdr->ar_tip) {
                  send_ARP_reply(sr, pkt, len, interface, ifnode);
@@ -88,6 +89,9 @@ void handle_ARP(struct sr_instance* sr, uint8_t* pkt, unsigned int len, char* in
              printf("!! ARP Req: Failed to Find %s\n", inet_ntoa(req));         }
   }
   if(is_ARP_reply(arp_hdr)){
+	  printf("ARP Header: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	  arpDumpHeader(arp_hdr);
+	  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
           rep.s_addr = arp_hdr->ar_sip;
           // log
           printf("ARP Reply: %s @ ", inet_ntoa(rep));
@@ -96,6 +100,17 @@ void handle_ARP(struct sr_instance* sr, uint8_t* pkt, unsigned int len, char* in
              printf("%2.2x", arp_hdr->ar_sha[i]);
          
 	  printf("\n");
+
+	  /* cache the new arp entry */
+        arpCacheEntry(arp_hdr);
+
+        /* loop through arp cache to find matching arps for cached packets */
+        for (i = 0; i < CACHE_SIZE; i++) {
+            if (arpCache[i].valid == 1)
+                checkCachedPackets(sr, i);
+	}
+	//sr_add_rt_entry(sr, rep, struct in_addr gw, struct in_addr mask,char* if_name);
+        sr_print_routing_table(sr);
   }  
 }
 
@@ -151,11 +166,12 @@ void send_ARP_request(struct sr_instance* sr, struct sr_if* ifnode, uint32_t tp_
      make_ethhdr(ethernetHdr, ETHERTYPE_ARP, ifnode->addr, broadcast);
      
      // SEND!
+     printf("Sending through ifnode_name: %s\n", ifnode->name);
      sr_send_packet(sr, requestPkt, 42, ifnode->name);
       
      // log
      req.s_addr = tp_addr;
-     printf("ARP Req: Broadcasting %s?\n", inet_ntoa(req));
+     printf("Sending ARP Req: Broadcasting 'who has %s ?'\n", inet_ntoa(req));
 
      free(requestPkt);
 }

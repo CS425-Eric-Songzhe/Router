@@ -3,7 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
-
+#include <sys/socket.h> 
+#include <netinet/in.h> 
+#include <arpa/inet.h>
 #include "my_forward.h"
 #include "sr_if.h"
 #include "sr_rt.h"
@@ -34,6 +36,7 @@ handleForward (struct sr_instance *sr,
   /* loop through rtable for the next hop with the packet's destination ip */
   while (rtptr)
     {
+//      printf("rtable ip_dest addr: %s\n",inet_ntoa(ipHdr->ip_dst.s_addr));
       if (rtptr->dest.s_addr == ipHdr->ip_dst.s_addr)
 	break;
       else
@@ -43,7 +46,10 @@ handleForward (struct sr_instance *sr,
   /* if not in our rtable, send it out eth0 to the intarwebz */
   if (!rtptr)
     {
-      rtptr = sr->routing_table;	// eth0
+      printf("Cannot find in the rtable!!!\n");
+      rtptr = sr->routing_table; // eth0
+    }	
+  /*
       if ((cachedEntry = arpSearchCache (rtptr->gw.s_addr)) > -1)
 	{
 	  forwardPacket (sr, packet, len, rtptr->interface,
@@ -54,7 +60,7 @@ handleForward (struct sr_instance *sr,
 	  cachePacket (sr, packet, len, rtptr);
 	}
     }
-
+  */
   /* look through arp cache for mac matching the ip destination. if we have it,
    * forward our packet. otherwise, cache the packet and wait for an arp reply
    * to tell us the correct mac address */
@@ -65,8 +71,9 @@ handleForward (struct sr_instance *sr,
     }
   else
     {
+      printf("Not in arp cache\n");
       cachePacket (sr, packet, len, rtptr);
-    }
+      }
 }
 
 /*-----------------------------------------------------------------------------
@@ -112,8 +119,8 @@ cachePacket (struct sr_instance *sr,
   int i;
 
   /* request arp for the unidentified packet */
-  send_ARP_request (sr, sr_get_interface (sr, rtptr->interface),
-		    rtptr->gw.s_addr);
+  printf("--\ncalling to send ARP request from my_forward.cachePacket()\n");
+  send_ARP_request(sr, sr_get_interface(sr, rtptr->interface), rtptr->gw.s_addr);
 
   /* look through packet cache for the first empty entry */
   for (i = 0; i < PACKET_CACHE_SIZE; i++)
@@ -181,11 +188,8 @@ checkCachedPackets (struct sr_instance *sr, int cachedArp)
 					  (difftime (time (NULL), packetCache[i].timeCached)) %
 					  3 < 1)
 					{
-					  send_ARP_request (sr,
-										sr_get_interface (sr,
-														  packetCache
-														  [i].nexthop->interface),
-										packetCache[i].nexthop->gw.s_addr);
+					    printf("--\nI want to call to send ARP request from my_forward.checkCachedPackets()\n");
+					    //send_ARP_request (sr,sr_get_interface (sr, packetCache[i].nexthop->interface),packetCache[i].nexthop->gw.s_addr);
 					  packetCache[i].arps++;
 					}
 				}
